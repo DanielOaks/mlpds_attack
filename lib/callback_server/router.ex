@@ -7,8 +7,8 @@ defmodule MlpdsAttack.CallbackServer.Router do
 
   use Plug.Router
 
-  plug :match
-  plug :dispatch
+  plug(:match)
+  plug(:dispatch)
 
   get "/auth" do
     send_resp(conn, 200, "Welcome to my API")

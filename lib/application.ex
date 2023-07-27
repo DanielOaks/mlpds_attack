@@ -13,14 +13,15 @@ defmodule MlpdsAttack.Application do
         ) :: {:ok, pid()} | {:ok, pid(), Application.state()} | {:error, term()}
   def start(_type, _args) do
     callback_port = String.to_integer(Application.get_env(:mlpds_attack, :callback_port))
-    Logger.info("Starting callback server on port #{ callback_port }")
+    Logger.info("Starting callback server on port #{callback_port}")
 
     children = [
       # Handles OAuth2 callbacks.
-      {Plug.Cowboy, scheme: :http, plug: MlpdsAttack.CallbackServer.Router, options: [port: callback_port]},
+      {Plug.Cowboy,
+       scheme: :http, plug: MlpdsAttack.CallbackServer.Router, options: [port: callback_port]},
 
       # Consumes discord events.
-      MlpdsAttack.Discord.Consumer,
+      MlpdsAttack.Discord.Consumer
 
       # # Manages the PostgreSQL connection.
       # Bolt.Repo,
