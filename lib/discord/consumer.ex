@@ -9,6 +9,49 @@ defmodule MlpdsAttack.Discord.Consumer do
   alias Nostrum.Api
   alias Nostrum.Struct.Interaction
 
+  defp attack_response(attacker, victim, url, filename) do
+    Logger.debug("Trying to download #{url}")
+
+    case HTTPoison.get(url) do
+      {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
+        %{
+          # ChannelMessageWithSource
+          type: 4,
+          data: %{
+            content: "<@#{attacker}> attacked <@#{victim}>!",
+            files: [
+              %{
+                name: filename,
+                body: body
+              }
+            ]
+          }
+        }
+
+      {:ok, %HTTPoison.Response{status_code: 404}} ->
+        Logger.info("404")
+
+        %{
+          # ChannelMessageWithSource
+          type: 4,
+          data: %{
+            content: "Command failed"
+          }
+        }
+
+      {:error, %HTTPoison.Error{reason: reason}} ->
+        Logger.info("HTTPoison error on grabbing url: #{reason}")
+
+        %{
+          # ChannelMessageWithSource
+          type: 4,
+          data: %{
+            content: "Command failed"
+          }
+        }
+    end
+  end
+
   defp handle_attack(
          %Interaction{
            data: %{
@@ -26,18 +69,15 @@ defmodule MlpdsAttack.Discord.Consumer do
       "Processing attack: #{victimOption.value}, #{messageOption.value}, #{mediaOption.value}"
     )
 
-    Logger.debug(attachments[mediaOption.value].url)
-
-    response = %{
-      # ChannelMessageWithSource
-      type: 4,
-      data: %{
-        content:
-          "<@#{interaction.user.id}> attacked <@#{victimOption.value}>! We can't save and upload the file yet :pensive:"
-      }
-    }
-
-    Api.create_interaction_response(interaction, response)
+    Api.create_interaction_response(
+      interaction,
+      attack_response(
+        interaction.user.id,
+        victimOption.value,
+        attachments[mediaOption.value].url,
+        attachments[mediaOption.value].filename
+      )
+    )
   end
 
   def handle_event({:READY, msg, _ws_state}) do
@@ -53,27 +93,6 @@ defmodule MlpdsAttack.Discord.Consumer do
       ) do
     Logger.info("Attack found!")
     handle_attack(interaction)
-  end
-
-  def handle_event({:MESSAGE_CREATE, msg, _ws_state}) do
-    Logger.debug(msg)
-
-    case msg.content do
-      "!sleep" ->
-        Api.create_message(msg.channel_id, "Going to sleep...")
-        # This won't stop other events from being handled.
-        Process.sleep(3000)
-
-      "!ping" ->
-        Api.create_message(msg.channel_id, "response!")
-
-      "!raise" ->
-        # This won't crash the entire Consumer.
-        raise "No problems here!"
-
-      _ ->
-        :ignore
-    end
   end
 
   # Default event handler, if you don't include this, your consumer WILL crash if
