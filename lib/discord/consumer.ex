@@ -7,6 +7,21 @@ defmodule MlpdsAttack.Discord.Consumer do
   use Nostrum.Consumer
 
   alias Nostrum.Api
+  alias Nostrum.Struct.Interaction
+
+  defp handle_attack(%Interaction{data: %{name: "attack", options: [%{type: 6} = victimOption, %{type: 3} = messageOption, %{type: 11} = mediaOption], resolved: %{attachments: attachments}}} = interaction) do
+    Logger.debug("Processing attack: #{victimOption.value}, #{messageOption.value}, #{mediaOption.value}")
+    Logger.debug(attachments[mediaOption.value].url)
+
+    response = %{
+      type: 4,  # ChannelMessageWithSource
+      data: %{
+        content: "<@#{interaction.user.id}> attacked <@#{victimOption.value}>! We can't save and upload the file yet :pensive:"
+      }
+    }
+
+    Api.create_interaction_response(interaction, response)
+  end
 
   def handle_event({:READY, msg, _ws_state}) do
     Logger.info("Discord connection is ready")
@@ -15,8 +30,13 @@ defmodule MlpdsAttack.Discord.Consumer do
     end
   end
 
+  def handle_event({:INTERACTION_CREATE, %Interaction{data: %{name: "attack"}} = interaction, _ws_state}) do
+    Logger.info("Attack found!")
+    handle_attack(interaction)
+  end
+
   def handle_event({:MESSAGE_CREATE, msg, _ws_state}) do
-    Logger.info(msg)
+    Logger.debug(msg)
     case msg.content do
       "!sleep" ->
         Api.create_message(msg.channel_id, "Going to sleep...")

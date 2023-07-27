@@ -27,7 +27,7 @@ defmodule MlpdsAttack.Discord.Commands do
         },
         %{
           type: OptionType.attachment(),
-          name: "image/video",
+          name: "image_or_video",
           description: "Show off your creativity",
           required: true
         },
