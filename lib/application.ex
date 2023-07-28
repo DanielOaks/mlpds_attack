@@ -12,8 +12,10 @@ defmodule MlpdsAttack.Application do
           term()
         ) :: {:ok, pid()} | {:ok, pid(), Application.state()} | {:error, term()}
   def start(_type, _args) do
-    callback_port = String.to_integer(Application.get_env(:mlpds_attack, :callback_port))
+    callback_port = Application.get_env(:mlpds_attack, :callback_port)
     Logger.info("Starting callback server on port #{callback_port}")
+
+    Logger.info("Enabling attacks: #{Application.get_env(:mlpds_attack, :enable_attacks)}")
 
     children = [
       # Handles OAuth2 callbacks.

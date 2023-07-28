@@ -22,7 +22,8 @@ import Config
 #
 
 config :mlpds_attack,
-  callback_port: System.get_env("CALLBACK_PORT") || "4000"
+  callback_port: System.get_env("CALLBACK_PORT", "4000") |> String.to_integer
+  enable_attacks: System.get_env("ENABLE_ATTACKS", "true") |> String.trim |> String.downcase
 
 # config :logger, :console, format: "[$level] $message\n"
 config :logger, :console,
