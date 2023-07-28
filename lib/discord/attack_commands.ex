@@ -1,6 +1,6 @@
-defmodule MlpdsAttack.Discord.Commands do
+defmodule MlpdsAttack.Discord.AttackCommands do
   @moduledoc """
-  Sets up commands.
+  Sets up attack commands.
   """
 
   require Logger
@@ -37,7 +37,7 @@ defmodule MlpdsAttack.Discord.Commands do
   end
 
   def register_on_guild(guild_id) do
-    Logger.debug("Registering commands on #{guild_id}")
+    Logger.debug("Registering attack commands on #{guild_id}")
 
     # https://kraigie.github.io/nostrum/application_commands.html
     Api.create_guild_application_command(guild_id, attack_command())

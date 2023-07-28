@@ -12,7 +12,7 @@ defmodule MlpdsAttack.Discord.Consumer do
     Logger.info("Discord connection is ready")
 
     for guild <- msg.guilds do
-      MlpdsAttack.Discord.Commands.register_on_guild(guild.id)
+      MlpdsAttack.Discord.AttackCommands.register_on_guild(guild.id)
     end
   end
 
@@ -20,7 +20,7 @@ defmodule MlpdsAttack.Discord.Consumer do
         {:INTERACTION_CREATE, %Interaction{data: %{name: "attack"}} = interaction, _ws_state}
       ) do
     Logger.info("Attack found!")
-    MlpdsAttack.Discord.Commands.handle_attack(interaction)
+    MlpdsAttack.Discord.AttackCommands.handle_attack(interaction)
   end
 
   # Default event handler, if you don't include this, your consumer WILL crash if
