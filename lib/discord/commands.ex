@@ -43,6 +43,35 @@ defmodule MlpdsAttack.Discord.Commands do
     Api.create_guild_application_command(guild_id, attack_command())
   end
 
+  def handle_attack(
+         %Interaction{
+           data: %{
+             name: "attack",
+             options: [
+               %{type: 6} = victimOption,
+               %{type: 3} = messageOption,
+               %{type: 11} = mediaOption
+             ],
+             resolved: %{attachments: attachments}
+           }
+         } = interaction
+       ) do
+    Logger.debug(
+      "Processing attack: #{victimOption.value}, #{messageOption.value}, #{mediaOption.value}"
+    )
+
+    Api.create_interaction_response(
+      interaction,
+      attack_response(
+        interaction.user.id,
+        victimOption.value,
+        attachments[mediaOption.value].url,
+        attachments[mediaOption.value].filename,
+        messageOption.value
+      )
+    )
+  end
+
   defp attack_response(attacker, victim, url, filename, message) do
     Logger.debug("Trying to download #{url}")
 
@@ -84,34 +113,5 @@ defmodule MlpdsAttack.Discord.Commands do
           }
         }
     end
-  end
-
-  def handle_attack(
-         %Interaction{
-           data: %{
-             name: "attack",
-             options: [
-               %{type: 6} = victimOption,
-               %{type: 3} = messageOption,
-               %{type: 11} = mediaOption
-             ],
-             resolved: %{attachments: attachments}
-           }
-         } = interaction
-       ) do
-    Logger.debug(
-      "Processing attack: #{victimOption.value}, #{messageOption.value}, #{mediaOption.value}"
-    )
-
-    Api.create_interaction_response(
-      interaction,
-      attack_response(
-        interaction.user.id,
-        victimOption.value,
-        attachments[mediaOption.value].url,
-        attachments[mediaOption.value].filename,
-        messageOption.value
-      )
-    )
   end
 end
